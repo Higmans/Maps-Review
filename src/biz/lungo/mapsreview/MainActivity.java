@@ -9,9 +9,9 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity {
-	double latitude = 50.7;
-	double longitude = 30.7;
-	 
+        double latitude = 50.7;
+        double longitude = 30.7;
+         
     // Google Map
     private GoogleMap googleMap;
  
@@ -31,8 +31,8 @@ public class MainActivity extends FragmentActivity {
     }
     @Override
     protected void onDestroy() {
-    	super.onDestroy();
-    	android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
+            super.onDestroy();
+            android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
         if (f != null) 
             getSupportFragmentManager().beginTransaction().remove(f).commit();
     }
