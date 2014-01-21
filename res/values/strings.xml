@@ -3,6 +3,14 @@
 
     <string name="app_name">Maps Review</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="clean">Очистить</string>
+    <string name="pick_area">Выбрать область</string>
+    <string name="map_type">Тип карты</string>
+    <string name="info">Информация</string>
+    <string name="standard">Стандартная</string>
+    <string name="hybrid">Гибридная</string>
+    <string name="political">Политическая</string>
+    <string name="physical">Физическая</string>
+    <string name="none">Нет</string>
 
 </resources>
