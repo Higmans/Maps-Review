@@ -3,6 +3,7 @@ package biz.lungo.mapsreview;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CameraPosition.Builder;
@@ -24,7 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements OnMapClickListener {
 	public static String CLEAN;
 	public static String PICK_AREA;
 	public static String MAP_TYPE;
@@ -59,7 +60,8 @@ public class MainActivity extends FragmentActivity {
 		builder.bearing(45.0f);
 		CameraPosition cp = builder.build();
 		CameraUpdate cu = CameraUpdateFactory.newCameraPosition(cp);
-		googleMap.animateCamera(cu);
+		//googleMap.animateCamera(cu);
+		googleMap.setOnMapClickListener(this);
 
 	}
 
@@ -150,5 +152,12 @@ public class MainActivity extends FragmentActivity {
 			});
 			return lv;
 		}
+	}
+
+	@Override
+	public void onMapClick(LatLng ll) {
+		double lat = ll.latitude;
+		double lng = ll.longitude;
+		Toast.makeText(this, "Lat: " + lat + " Lng: " + lng, Toast.LENGTH_LONG).show();
 	}
 }
