@@ -1,5 +1,8 @@
 package biz.lungo.mapsreview;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -12,6 +15,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
@@ -23,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements OnMapClickListener {
@@ -30,9 +37,15 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 	public static String PICK_AREA;
 	public static String MAP_TYPE;
 	public static String INFO;
+	String standard;
+	String hybrid;
+	String political;
+	String physical;
+	String none;
 	double latitude = 50.7;
 	double longitude = 30.7;
 	FragmentManager manager = getFragmentManager();
+	TextView textInfo;
 
 	// Google Map
 	private GoogleMap googleMap;
@@ -45,7 +58,12 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 		PICK_AREA = getResources().getString(R.string.pick_area);
 		MAP_TYPE = getResources().getString(R.string.map_type);
 		INFO = getResources().getString(R.string.info);
-
+		standard = getResources().getString(R.string.standard);
+		hybrid = getResources().getString(R.string.hybrid);
+		political = getResources().getString(R.string.political);
+		physical = getResources().getString(R.string.physical);
+		none = getResources().getString(R.string.none);
+		textInfo = (TextView) findViewById(R.id.textViewInfo);
 		try {
 			// Loading map
 			initilizeMap();
@@ -60,7 +78,7 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 		builder.bearing(45.0f);
 		CameraPosition cp = builder.build();
 		CameraUpdate cu = CameraUpdateFactory.newCameraPosition(cp);
-		//googleMap.animateCamera(cu);
+		googleMap.animateCamera(cu);
 		googleMap.setOnMapClickListener(this);
 
 	}
@@ -127,21 +145,17 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 	}
 	
 	class MapTypeDialog extends DialogFragment{
-		final String mapTypeKeys[] = {getResources().getString(R.string.standard), 
-										getResources().getString(R.string.hybrid), 
-										getResources().getString(R.string.political), 
-										getResources().getString(R.string.physical), 
-										getResources().getString(R.string.none)};
+		final String mapTypeKeys[] = {standard, hybrid, political, physical, none};
 		final int mapTypeValues[] = {GoogleMap.MAP_TYPE_NORMAL, 
-										GoogleMap.MAP_TYPE_HYBRID, 
-										GoogleMap.MAP_TYPE_TERRAIN, 
-										GoogleMap.MAP_TYPE_SATELLITE, 
-										GoogleMap.MAP_TYPE_NONE};
+									GoogleMap.MAP_TYPE_HYBRID, 
+									GoogleMap.MAP_TYPE_TERRAIN, 
+									GoogleMap.MAP_TYPE_SATELLITE, 
+									GoogleMap.MAP_TYPE_NONE};
 		
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 			ListView lv = new ListView(getActivity());
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplication(), android.R.layout.simple_list_item_1, mapTypeKeys);
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplication(), android.R.layout.simple_list_item_2, mapTypeKeys);
 			lv.setAdapter(adapter);
 			lv.setOnItemClickListener(new OnItemClickListener() {
 				@Override
@@ -158,6 +172,16 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 	public void onMapClick(LatLng ll) {
 		double lat = ll.latitude;
 		double lng = ll.longitude;
-		Toast.makeText(this, "Lat: " + lat + " Lng: " + lng, Toast.LENGTH_LONG).show();
+		Geocoder geocoder = new Geocoder(this);
+		List<Address> fromLocation = null;
+		try {
+			fromLocation = geocoder.getFromLocation(lat, lng, 10);
+		} catch (IOException e) {			
+		}
+		String addressLine1 = fromLocation.get(0).getAddressLine(0);
+		String addressLine2 = fromLocation.get(0).getAddressLine(1);
+		String addressLine3 = fromLocation.get(0).getAddressLine(2);
+		textInfo.setVisibility(View.VISIBLE);
+		textInfo.setText(addressLine1 + "\n" + addressLine2 + "\n" + addressLine3);
 	}
 }

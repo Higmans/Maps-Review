@@ -8,4 +8,16 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		class="com.google.android.gms.maps.MapFragment"/>
+
+    <TextView
+        android:id="@+id/textViewInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:alpha="0.8"
+        android:background="#FFFF"
+        android:minHeight="70dp"
+        android:visibility="gone" />
+
 </RelativeLayout>
