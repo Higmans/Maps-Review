@@ -20,6 +20,10 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -28,19 +32,23 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends FragmentActivity implements OnMapClickListener, OnMapLongClickListener {
+public class MainActivity extends FragmentActivity implements OnMapClickListener, OnMapLongClickListener, OnClickListener {
 	public static String CLEAN;
 	public static String PICK_AREA;
 	public static String MAP_TYPE;
 	public static String INFO;
+	static final int TILT_STEP = 20;
+	static final  int TURN_STEP = 20;
 	String standard;
 	String hybrid;
 	String political;
@@ -50,10 +58,15 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 	double longitude = 30.7;
 	FragmentManager manager = getFragmentManager();
 	TextView textInfo;
+	Button tiltUp, tiltDown, turnLeft, turnRight;
 	List<LatLng> llList;
 	int markerCounter = 0;
 	String markerNames[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
 	int maxMarkersCount = markerNames.length;
+	Builder builder;
+	CameraPosition cp;
+	CameraUpdate cu;
+	static SensorManager mSensorManager;
 
 	// Google Map
 	private GoogleMap googleMap;
@@ -72,7 +85,16 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 		physical = getResources().getString(R.string.physical);
 		none = getResources().getString(R.string.none);
 		textInfo = (TextView) findViewById(R.id.textViewInfo);
+		tiltUp = (Button) findViewById(R.id.buttonTiltUp);
+		tiltDown = (Button) findViewById(R.id.buttonTiltDown);
+		turnLeft = (Button) findViewById(R.id.buttonTurnLeft);
+		turnRight = (Button) findViewById(R.id.buttonTurnRight);
+		tiltUp.setOnClickListener(this);
+		tiltDown.setOnClickListener(this);
+		turnLeft.setOnClickListener(this);
+		turnRight.setOnClickListener(this);
 		llList = new ArrayList<LatLng>();
+		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		try {
 			// Loading map
 			initilizeMap();
@@ -80,16 +102,57 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		Builder builder = CameraPosition.builder();
-		builder.target(new LatLng(50, 30));
-		builder.zoom(10.0f);
-		builder.tilt(25.0f);
-		builder.bearing(45.0f);
-		CameraPosition cp = builder.build();
-		CameraUpdate cu = CameraUpdateFactory.newCameraPosition(cp);
-		googleMap.animateCamera(cu);
+		builder = CameraPosition.builder();
+		//builder.zoom(10.0f);
+		//cp = builder.build();
+		//cu = CameraUpdateFactory.newCameraPosition(cp);
+		//googleMap.moveCamera(cu);
 		googleMap.setOnMapClickListener(this);
 		googleMap.setOnMapLongClickListener(this);
+		Sensor sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+		
+		final SensorEventListener sEListener = new SensorEventListener() {
+			
+			@Override
+			public void onSensorChanged(SensorEvent event) {
+				builder.target(googleMap.getCameraPosition().target);
+				builder.zoom(googleMap.getCameraPosition().zoom);
+				builder.bearing(googleMap.getCameraPosition().bearing);
+				textInfo.setVisibility(View.VISIBLE);
+				textInfo.setText(event.values[1] * 10 + "");
+				float maxTilt = getMaxTilt(googleMap.getCameraPosition().zoom);
+				if (event.values[1] * 10 <= maxTilt && event.values[1] * 10 >= 0){
+					builder.tilt(event.values[1] * 10);
+				}
+				else if (event.values[1] * 10 <= 0){
+					builder.tilt(0);
+				}
+				else if (event.values[1] * 10 >= maxTilt){
+					builder.tilt(maxTilt);
+				}
+				cp = builder.build();
+				cu = CameraUpdateFactory.newCameraPosition(cp);
+				googleMap.animateCamera(cu);
+			}
+			
+			private float getMaxTilt(float zoom) {
+				float tilt = 30.0f;				 
+			    if (zoom > 15.5f) {
+			        tilt = 67.5f;
+			    } else if (zoom >= 14.0f) {
+			        tilt = (((zoom - 14.0f) / 1.5f) * (67.5f - 45.0f)) + 45.0f;
+			    } else if (zoom >= 10.0f) {
+			        tilt = (((zoom - 10.0f) / 4.0f) * (45.0f - 30.0f)) + 30.0f;
+			    }			 
+			    return tilt;
+			}
+
+			@Override
+			public void onAccuracyChanged(Sensor sensor, int accuracy) {
+				
+			}
+		};
+		mSensorManager.registerListener(sEListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 
 	}
 
@@ -215,5 +278,32 @@ public class MainActivity extends FragmentActivity implements OnMapClickListener
 		}
 		polyLine.geodesic(true);
 		googleMap.addPolyline(polyLine);
+	}
+
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()){
+		case R.id.buttonTiltUp:
+			if (cp.tilt + TILT_STEP <= 90)
+				builder.tilt(cp.tilt + TILT_STEP);
+			else 
+				builder.tilt(90);
+			break;
+		case R.id.buttonTiltDown:
+			if (cp.tilt - TILT_STEP >= 0)
+				builder.tilt(cp.tilt - TILT_STEP);
+			else
+				builder.tilt(0);
+			break;
+		case R.id.buttonTurnLeft:
+			builder.bearing(cp.bearing - TURN_STEP);
+			break;
+		case R.id.buttonTurnRight:
+			builder.bearing(cp.bearing + TURN_STEP);
+			break;
+		}
+		cp = builder.build();
+		//cu = CameraUpdateFactory.newCameraPosition(cp);
+		//googleMap.animateCamera(cu);
 	}	
 }

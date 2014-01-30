@@ -20,4 +20,46 @@
         android:minHeight="70dp"
         android:visibility="gone" />
 
+    <Button
+        android:id="@+id/buttonTiltUp"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="22dp"
+        android:layout_marginTop="22dp"
+        android:text="UP" />
+
+    <Button
+        android:id="@+id/buttonTiltDown"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/buttonTiltUp"
+        android:layout_below="@+id/buttonTiltUp"
+        android:layout_marginTop="20dp"
+        android:text="DN" />
+
+    <Button
+        android:id="@+id/buttonTurnLeft"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/buttonTiltUp"
+        android:layout_alignBottom="@+id/buttonTiltUp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="21dp"
+        android:text="&lt;" />
+
+    <Button
+        android:id="@+id/buttonTurnRight"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/buttonTiltDown"
+        android:layout_alignBottom="@+id/buttonTiltDown"
+        android:layout_alignLeft="@+id/buttonTurnLeft"
+        android:text=">" />
+
 </RelativeLayout>
